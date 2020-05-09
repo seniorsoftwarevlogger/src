@@ -1,0 +1,19 @@
+{
+  "name": "inside-login",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "googleapis": "^49.0.0",
+    "json-markup": "^1.1.3",
+    "patreon": "^0.4.1"
+  }
+}
