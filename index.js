@@ -1,67 +1,190 @@
 const patreonModule = require("patreon");
+const { google } = require("googleapis");
 
 const express = require("express");
+const handlebars = require("express-handlebars");
+const cors = require("cors");
+const cookieParser = require("cookie-parser");
+const generateToken = require("./src/auth/generateToken");
+const verifyToken = require("./src/auth/verifyToken");
+
 const format = require("url").format;
-const jsonMarkup = require("json-markup");
-const fs = require("fs");
 
 const { patreon, oauth } = patreonModule;
-
-const jsonStyles = fs.readFileSync(
-  __dirname + "/node_modules/json-markup/style.css"
-);
-
-const app = express();
 
 if (process.env.NODE_ENV !== "production") {
   require("dotenv").config();
 }
 
+const app = express();
+
+app.use(express.static("public"));
+app.use(express.json());
+app.use(
+  cors({
+    origin: ["http://localhost:5000", "https://src.seniorsoftwarevlogger.com"],
+    credentials: true,
+  })
+);
+app.use(cookieParser());
+app.engine("handlebars", handlebars());
+app.set("view engine", "handlebars");
+
 const clientId = process.env.PATREON_CLIENT_ID;
 const clientSecret = process.env.PATREON_CLIENT_SECRET;
-// redirect_uri should be the full redirect url
-const redirect =
-  process.env.REDIRECT_URL || "http://localhost:5000/oauth/redirect";
+const patreonRedirect =
+  process.env.PATREON_REDIRECT_URL ||
+  "http://localhost:5000/oauth/redirect/patreon";
 
 const oauthClient = oauth(clientId, clientSecret);
 
-// mimic a database
-let database = {};
-
-const loginUrl = format({
+const patreonUrl = format({
   protocol: "https",
   host: "patreon.com",
   pathname: "/oauth2/authorize",
   query: {
     response_type: "code",
     client_id: clientId,
-    redirect_uri: redirect,
+    redirect_uri: patreonRedirect,
     state: "chill",
+    scope: "identity[email]",
   },
 });
 
-app.get("/", (req, res) => {
-  res.send(`<a href="${loginUrl}">Login with Patreon</a>`);
+const oauth2Client = new google.auth.OAuth2(
+  process.env.GOOGLE_CLIENT_ID,
+  process.env.GOOGLE_CLIENT_SECRET,
+  process.env.GOOGLE_REDIRECT_URL ||
+    "http://localhost:5000/oauth/redirect/youtube"
+);
+
+const scopes = ["https://www.googleapis.com/auth/youtube"];
+
+const googleUrl = oauth2Client.generateAuthUrl({
+  access_type: "online",
+  scope: scopes,
 });
 
-app.get("/oauth/redirect", (req, res) => {
+app.get("/", verifyToken, function (req, res) {
+  let params = { user: req.user };
+
+  if (req.user.patreon) {
+    const apiClient = patreon(req.user.patreon.accessToken);
+
+    apiClient("/current_user", {
+      include: "memberships",
+      fields: {
+        user: "full_name,email,image_url,about",
+        member:
+          "patron_status,last_charge_status,last_charge_date,pledge_relationship_start",
+      },
+    })
+      .then((userData) => {
+        params.raw = JSON.stringify(userData.rawJson);
+        console.dir(userData.rawJson);
+
+        res.render("home", params);
+      })
+      .catch((err) => {
+        console.log(err);
+        res.redirect("/");
+      });
+  }
+
+  if (req.user.youtube) {
+    oauth2Client.setCredentials({
+      access_token: req.user.youtube.accessToken,
+    });
+
+    google
+      .youtube({ version: "v3", auth: oauth2Client })
+      .channels.list({
+        part: "snippet",
+        mine: true,
+      })
+      .then((response) => {
+        params.raw = JSON.stringify(response.data.items[0]);
+
+        res.render("home", params);
+      })
+      .catch((err) => {
+        console.log(err);
+        res.redirect("/");
+      });
+  }
+});
+
+app.get("/login", function (req, res) {
+  res.render("login", { patreonUrl, googleUrl });
+});
+
+app.get("/oauth/redirect/youtube", (req, res) => {
   const { code } = req.query;
-  let token;
+
+  oauth2Client.getToken(code).then(({ tokens }) => {
+    oauth2Client.setCredentials(tokens);
+
+    google
+      .youtube({ version: "v3", auth: oauth2Client })
+      .channels.list({
+        part: "snippet",
+        mine: true,
+      })
+      .then((response) => {
+        if (response.errors) {
+          // The response structure is different in case of errors ¯\_(ツ)_/¯
+          console.log(errors);
+          // res.status(response.code);
+        }
+
+        // store JWT
+        generateToken(res, {
+          name: response.data.items[0].snippet.title,
+          youtube: {
+            accessToken: tokens.access_token,
+            channelId: response.data.items[0].id,
+          },
+        });
+        res.redirect("/");
+      })
+      .catch((err) => {
+        console.log(err);
+        res.redirect("/");
+      });
+  });
+});
+
+app.get("/oauth/redirect/patreon", (req, res) => {
+  const { code } = req.query;
 
   return oauthClient
-    .getTokens(code, redirect)
+    .getTokens(code, patreonRedirect)
     .then(({ access_token }) => {
-      token = access_token; // eslint-disable-line camelcase
-      const apiClient = patreon(token);
-      return apiClient("/current_user");
+      const apiClient = patreon(access_token);
+
+      return Promise.all([
+        Promise.resolve(access_token),
+        apiClient("/current_user", {
+          include: "memberships",
+          fields: {
+            user: "full_name,email,image_url",
+            member:
+              "patron_status,last_charge_status,last_charge_date,pledge_relationship_start",
+          },
+        }),
+      ]);
     })
-    .then(({ store, rawJson }) => {
-      const { id } = rawJson.data;
-      database[id] = { ...rawJson.data, token };
-      console.log(
-        `Saved user ${store.find("user", id).full_name} to the database`
-      );
-      return res.redirect(`/protected/${id}`);
+    .then(([token, userData]) => {
+      console.dir(userData.rawJson.data.relationships.campaign);
+
+      generateToken(res, {
+        name: userData.rawJson.data.attributes.full_name,
+        patreon: {
+          accessToken: token,
+        },
+      });
+
+      return res.redirect("/");
     })
     .catch((err) => {
       console.log(err);
@@ -70,68 +193,17 @@ app.get("/oauth/redirect", (req, res) => {
     });
 });
 
-app.get("/protected/:id", (req, res) => {
-  const { id } = req.params;
+app.get("/logout", (req, res) => {
+  res.cookie("token", "", {
+    expires: new Date(Date.now()),
+    secure: process.env.DB_ENV === "production",
+    httpOnly: true,
+  });
 
-  // load the user from the database
-  const user = database[id];
-  if (!user || !user.token) {
-    return res.redirect("/");
-  }
-
-  const apiClient = patreon(user.token);
-
-  // make api requests concurrently
-  return apiClient("/current_user/campaigns")
-    .then(({ store }) => {
-      const _user = store.find("user", id);
-      const campaign = _user.campaign ? _user.campaign.serialize().data : null;
-      const page = oauthExampleTpl({
-        name: _user.first_name,
-        campaigns: [campaign],
-      });
-      return res.send(page);
-    })
-    .catch((err) => {
-      const { status, statusText } = err;
-      console.log("Failed to retrieve campaign info");
-      console.log(err);
-      return res.json({ status, statusText });
-    });
+  res.redirect("/");
 });
 
 const server = app.listen(process.env.PORT || 5000, () => {
   const { port } = server.address();
   console.log(`Listening on http:/localhost:${port}`);
 });
-
-function oauthExampleTpl({ name, campaigns }) {
-  return `
-<!DOCTYPE html>
-<html>
-    <head>
-        <meta charset="utf-8">
-        <title>OAuth Results</title>
-        <style>
-            .container {
-                max-width: 800px;
-                margin: auto;
-            }
-            .jsonsample {
-                max-height: 500px;
-                overflow: auto;
-                margin-bottom: 60px;
-                border-bottom: 1px solid #ccc;
-            }
-        </style>
-        <style>${jsonStyles}</style>
-    </head>
-    <body>
-        <div class="container">
-            <h1>Welcome, ${name}!</h1>
-            <h2>Campaigns</h2>
-            <div class="jsonsample">${jsonMarkup(campaigns)}</div>
-        </div>
-    </body>
-</html>`;
-}
