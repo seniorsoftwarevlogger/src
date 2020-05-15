@@ -1,3 +1,8 @@
-Hey, {{{user.name}}}! <a href="/logout">Bye!</a>
+<p>Hey, {{{user.name}}}! <a href="/logout">Bye!</a></p>
 
-<div>{{{raw}}}</div>
+
+<ul>
+  {{#each posts.data}}
+  <li><a href="/posts/{{{this.id}}}">{{{this.attributes.title}}}</a></li>
+  {{/each}}
+</ul>

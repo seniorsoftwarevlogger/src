@@ -18,6 +18,7 @@
     "express-jwt": "^5.3.3",
     "googleapis": "^49.0.0",
     "jsonwebtoken": "^8.5.1",
+    "node-fetch": "^2.6.0",
     "patreon": "^0.4.1"
   }
 }

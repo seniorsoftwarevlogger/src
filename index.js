@@ -1,3 +1,5 @@
+const fetch = require("node-fetch");
+
 const patreonModule = require("patreon");
 const { google } = require("googleapis");
 
@@ -68,53 +70,79 @@ const googleUrl = oauth2Client.generateAuthUrl({
 app.get("/", verifyToken, function (req, res) {
   let params = { user: req.user };
 
-  if (req.user.patreon) {
-    const apiClient = patreon(req.user.patreon.accessToken);
+  const campaignId = "790735";
 
-    apiClient("/current_user", {
-      include: "memberships",
-      fields: {
-        user: "full_name,email,image_url,about",
-        member:
-          "patron_status,last_charge_status,last_charge_date,pledge_relationship_start",
+  fetch(
+    `https://www.patreon.com/api/oauth2/v2/campaigns/${campaignId}/posts?fields%5Bpost%5D=title`,
+    {
+      headers: {
+        Authorization: `Bearer ${process.env.PATREON_CREATOR_ACCESS_TOKEN}`,
       },
-    })
-      .then((userData) => {
-        params.raw = JSON.stringify(userData.rawJson);
-        console.dir(userData.rawJson);
+    }
+  )
+    .then((res) => res.json())
+    .then((json) => res.render("home", { ...params, posts: json }))
+    .catch((error) => res.render("error", { error }));
 
-        res.render("home", params);
-      })
-      .catch((err) => {
-        console.log(err);
-        res.redirect("/");
-      });
-  }
+  // if (req.user.patreon) {
+  //   const apiClient = patreon(req.user.patreon.accessToken);
 
-  if (req.user.youtube) {
-    oauth2Client.setCredentials({
-      access_token: req.user.youtube.accessToken,
-    });
+  //   apiClient("/current_user", {
+  //     include: "memberships",
+  //     fields: {
+  //       user: "full_name,email,image_url,about",
+  //       member:
+  //         "patron_status,last_charge_status,last_charge_date,pledge_relationship_start",
+  //     },
+  //   })
+  //     .then((userData) => {
+  //       params.raw = JSON.stringify(userData.rawJson);
+  //       console.dir(userData.rawJson);
 
-    google
-      .youtube({ version: "v3", auth: oauth2Client })
-      .channels.list({
-        part: "snippet",
-        mine: true,
-      })
-      .then((response) => {
-        params.raw = JSON.stringify(response.data.items[0]);
+  //       res.render("home", params);
+  //     })
+  //     .catch((err) => {
+  //       console.log(err);
+  //       res.redirect("/");
+  //     });
+  // }
 
-        res.render("home", params);
-      })
-      .catch((err) => {
-        console.log(err);
-        res.redirect("/");
-      });
-  }
+  // if (req.user.youtube) {
+  //   oauth2Client.setCredentials({
+  //     access_token: req.user.youtube.accessToken,
+  //   });
+
+  //   google
+  //     .youtube({ version: "v3", auth: oauth2Client })
+  //     .channels.list({
+  //       part: "snippet",
+  //       mine: true,
+  //     })
+  //     .then((response) => {
+  //       params.raw = JSON.stringify(response.data.items[0]);
+
+  //       res.render("home", params);
+  //     })
+  //     .catch((err) => {
+  //       console.log(err);
+  //       res.redirect("/");
+  //     });
+  // }
 });
 
-app.get("/posts/{id}", (req, res) => {});
+app.get("/posts/:postId", verifyToken, (req, res) => {
+  fetch(
+    `https://www.patreon.com/api/oauth2/v2/posts/${req.params.postId}?fields%5Bpost%5D=title,content,embed_data,embed_url,published_at,is_public,is_paid,app_status,app_id,url`,
+    {
+      headers: {
+        Authorization: `Bearer ${process.env.PATREON_CREATOR_ACCESS_TOKEN}`,
+      },
+    }
+  )
+    .then((res) => res.json())
+    .then((json) => res.render("post", json))
+    .catch((error) => res.render("error", { error }));
+});
 
 app.get("/login", function (req, res) {
   res.render("login", { patreonUrl, googleUrl });
