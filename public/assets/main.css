@@ -56,7 +56,8 @@
   left: calc(-1 * var(--gap-horizontal));
   width: calc(100% + var(--gap-horizontal) * 2);
   height: calc(100% + var(--gap-vertical) * 2);
-  background: url(/assets/login-logo.jpg) no-repeat 0 0;
+  background: url(/assets/login-logo.jpg) no-repeat 0 0,
+    url(/assets/round-logo.png) no-repeat -13px -13px;
   background-size: 400px;
   background-color: var(--blend-color-1);
   transform: translate3d(0, 0, 0);

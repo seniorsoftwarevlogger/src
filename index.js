@@ -114,6 +114,8 @@ app.get("/", verifyToken, function (req, res) {
   }
 });
 
+app.get("/posts/{id}", (req, res) => {});
+
 app.get("/login", function (req, res) {
   res.render("login", { patreonUrl, googleUrl });
 });
