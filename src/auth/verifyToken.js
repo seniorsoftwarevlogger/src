@@ -13,7 +13,7 @@ const verifyToken = async (req, res, next) => {
     req.user = await jwt.verify(token, process.env.JWT_SECRET);
     next();
   } catch (err) {
-    return res.status(500).json(err.toString());
+    return res.redirect("/login");
   }
 };
 
