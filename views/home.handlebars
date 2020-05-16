@@ -1,8 +1,19 @@
-<p>Hey, {{{user.name}}}! <a href="/logout">Bye!</a></p>
+<header class="post-header">
+  <div class="inner">
+    <h1 class="post-title">Письма</h1>
+  </div>
+</header>
+<main class="content" role="main">
+  <article class="{{post_class}}">
+    <div class="inner">
 
-
-<ul>
-  {{#each posts.data}}
-  <li><a href="/posts/{{{this.id}}}">{{{this.attributes.title}}}</a></li>
-  {{/each}}
-</ul>
+      <section class="post-content">
+        <ul>
+          {{#each posts}}
+          <li><a href="/posts/{{{this.slug}}}">{{{this.title}}}</a></li>
+          {{/each}}
+        </ul>
+      </section>
+    </div>
+  </article>
+</main>
