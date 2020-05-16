@@ -134,7 +134,7 @@ app.get("/posts/:slug", verifyToken, (req, res) => {
 });
 
 app.get("/login", function (req, res) {
-  res.render("login", { patreonUrl, googleUrl });
+  res.render("login", { patreonUrl, googleUrl, layout: "login" });
 });
 
 app.get("/oauth/redirect/youtube", (req, res) => {
