@@ -1,4 +1,5 @@
 const fetch = require("node-fetch");
+const GhostContentAPI = require("@tryghost/content-api");
 
 const patreonModule = require("patreon");
 const { google } = require("googleapis");
@@ -67,21 +68,16 @@ const googleUrl = oauth2Client.generateAuthUrl({
   scope: scopes,
 });
 
+const ghostApi = new GhostContentAPI({
+  url: process.env.GHOST_URL,
+  key: process.env.GHOST_CONTENT_API,
+  version: "v3",
+});
+
 app.get("/", verifyToken, function (req, res) {
-  let params = { user: req.user };
-
-  const campaignId = "790735";
-
-  fetch(
-    `https://www.patreon.com/api/oauth2/v2/campaigns/${campaignId}/posts?fields%5Bpost%5D=title`,
-    {
-      headers: {
-        Authorization: `Bearer ${process.env.PATREON_CREATOR_ACCESS_TOKEN}`,
-      },
-    }
-  )
-    .then((res) => res.json())
-    .then((json) => res.render("home", { ...params, posts: json }))
+  ghostApi.posts
+    .browse({ limit: 5, include: "tags,authors" })
+    .then((posts) => res.render("home", { posts }))
     .catch((error) => res.render("error", { error }));
 
   // if (req.user.patreon) {
@@ -130,17 +126,10 @@ app.get("/", verifyToken, function (req, res) {
   // }
 });
 
-app.get("/posts/:postId", verifyToken, (req, res) => {
-  fetch(
-    `https://www.patreon.com/api/oauth2/v2/posts/${req.params.postId}?fields%5Bpost%5D=title,content,embed_data,embed_url,published_at,is_public,is_paid,app_status,app_id,url`,
-    {
-      headers: {
-        Authorization: `Bearer ${process.env.PATREON_CREATOR_ACCESS_TOKEN}`,
-      },
-    }
-  )
-    .then((res) => res.json())
-    .then((json) => res.render("post", json))
+app.get("/posts/:slug", verifyToken, (req, res) => {
+  ghostApi.posts
+    .read({ slug: req.params.slug }, { formats: ["html"] })
+    .then((post) => res.render("post", { post }))
     .catch((error) => res.render("error", { error }));
 });
 
