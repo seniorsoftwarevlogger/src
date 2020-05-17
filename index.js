@@ -96,7 +96,7 @@ app.get("/", verifyToken, checkMembership, function (req, res) {
     .catch((error) => res.render("error", { error }));
 });
 
-app.get("/privacy", verifyToken, checkMembership, function (req, res) {
+app.get("/privacy", function (req, res) {
   ghostApi.pages
     .read({ slug: "privacy" }, { formats: ["html"] })
     .then((page) => res.render("post", { post: page }))
