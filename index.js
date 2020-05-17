@@ -95,16 +95,25 @@ function checkMembership(req, res, next) {
       .then((res) => res.json())
       .then((json) => {
         if (json.errors && json.errors[0].status === "401") {
-          res.redirect("/login");
+          console.log(json.errors);
+          res.render("error", { error: json.errors[0] });
         } else {
           const store = new JsonApiDataStore();
           store.sync(json);
 
-          req.user.level = patreonLevelMapping[store.findAll("tier")[0].title];
+          const tier = store.findAll("tier")[0];
 
-          console.log(`${store.findAll("tier")[0].title} : ${req.user.level}`);
+          if (tier) {
+            req.user.level = patreonLevelMapping[tier.title];
+            console.log(
+              `${store.findAll("tier")[0].title} : ${req.user.level}`
+            );
 
-          next();
+            next();
+          } else {
+            console.log("User entitled to no tiers");
+            res.redirect("/login");
+          }
         }
       });
   } else if (req.user.youtube) {
