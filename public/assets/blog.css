@@ -180,12 +180,12 @@ th {
 }
 @font-face {
   font-family: "icon";
-  src: url("../font/icon.eot?89549845");
-  src: url("../font/icon.eot?89549845#iefix") format("embedded-opentype"),
-    url("../font/icon.woff2?89549845") format("woff2"),
-    url("../font/icon.woff?89549845") format("woff"),
-    url("../font/icon.ttf?89549845") format("truetype"),
-    url("../font/icon.svg?89549845#icon") format("svg");
+  src: url("/assets/font/icon.eot?89549845");
+  src: url("/assets/font/icon.eot?89549845#iefix") format("embedded-opentype"),
+    url("/assets/font/icon.woff2?89549845") format("woff2"),
+    url("/assets/font/icon.woff?89549845") format("woff"),
+    url("/assets/font/icon.ttf?89549845") format("truetype"),
+    url("/assets/font/icon.svg?89549845#icon") format("svg");
   font-weight: normal;
   font-style: normal;
 }
@@ -241,77 +241,43 @@ th {
   content: "\f0e1";
 }
 @font-face {
-  font-family: "Cardo";
-  font-style: normal;
-  font-weight: 400;
-  src: url("../font/cardo-v9-latin-regular.eot");
-  src: local("Cardo"), local("Cardo-Regular"),
-    url("../font/cardo-v9-latin-regular.eot?#iefix") format("embedded-opentype"),
-    url("../font/cardo-v9-latin-regular.woff2") format("woff2"),
-    url("../font/cardo-v9-latin-regular.woff") format("woff"),
-    url("../font/cardo-v9-latin-regular.ttf") format("truetype"),
-    url("../font/cardo-v9-latin-regular.svg#Cardo") format("svg");
-}
-@font-face {
-  font-family: "Cardo";
-  font-style: italic;
-  font-weight: 400;
-  src: url("../font/cardo-v9-latin-italic.eot");
-  src: local("Cardo Italic"), local("Cardo-Italic"),
-    url("../font/cardo-v9-latin-italic.eot?#iefix") format("embedded-opentype"),
-    url("../font/cardo-v9-latin-italic.woff2") format("woff2"),
-    url("../font/cardo-v9-latin-italic.woff") format("woff"),
-    url("../font/cardo-v9-latin-italic.ttf") format("truetype"),
-    url("../font/cardo-v9-latin-italic.svg#Cardo") format("svg");
-}
-@font-face {
-  font-family: "Cardo";
-  font-style: normal;
-  font-weight: 700;
-  src: url("../font/cardo-v9-latin-700.eot");
-  src: local("Cardo Bold"), local("Cardo-Bold"),
-    url("../font/cardo-v9-latin-700.eot?#iefix") format("embedded-opentype"),
-    url("../font/cardo-v9-latin-700.woff2") format("woff2"),
-    url("../font/cardo-v9-latin-700.woff") format("woff"),
-    url("../font/cardo-v9-latin-700.ttf") format("truetype"),
-    url("../font/cardo-v9-latin-700.svg#Cardo") format("svg");
-}
-@font-face {
   font-family: "Fira Sans";
   font-style: normal;
   font-weight: 400;
-  src: url("../font/fira-sans-v8-latin-regular.eot");
+  src: url("/assets/font/fira-sans-v8-latin-regular.eot");
   src: local("Fira Sans Regular"), local("FiraSans-Regular"),
-    url("../font/fira-sans-v8-latin-regular.eot?#iefix")
+    url("/assets/font/fira-sans-v8-latin-regular.eot?#iefix")
       format("embedded-opentype"),
-    url("../font/fira-sans-v8-latin-regular.woff2") format("woff2"),
-    url("../font/fira-sans-v8-latin-regular.woff") format("woff"),
-    url("../font/fira-sans-v8-latin-regular.ttf") format("truetype"),
-    url("../font/fira-sans-v8-latin-regular.svg#FiraSans") format("svg");
+    url("/assets/font/fira-sans-v8-latin-regular.woff2") format("woff2"),
+    url("/assets/font/fira-sans-v8-latin-regular.woff") format("woff"),
+    url("/assets/font/fira-sans-v8-latin-regular.ttf") format("truetype"),
+    url("/assets/font/fira-sans-v8-latin-regular.svg#FiraSans") format("svg");
 }
 @font-face {
   font-family: "Fira Sans";
   font-style: normal;
   font-weight: 500;
-  src: url("../font/fira-sans-v8-latin-500.eot");
+  src: url("/assets/font/fira-sans-v8-latin-500.eot");
   src: local("Fira Sans Medium"), local("FiraSans-Medium"),
-    url("../font/fira-sans-v8-latin-500.eot?#iefix") format("embedded-opentype"),
-    url("../font/fira-sans-v8-latin-500.woff2") format("woff2"),
-    url("../font/fira-sans-v8-latin-500.woff") format("woff"),
-    url("../font/fira-sans-v8-latin-500.ttf") format("truetype"),
-    url("../font/fira-sans-v8-latin-500.svg#FiraSans") format("svg");
+    url("/assets/font/fira-sans-v8-latin-500.eot?#iefix")
+      format("embedded-opentype"),
+    url("/assets/font/fira-sans-v8-latin-500.woff2") format("woff2"),
+    url("/assets/font/fira-sans-v8-latin-500.woff") format("woff"),
+    url("/assets/font/fira-sans-v8-latin-500.ttf") format("truetype"),
+    url("/assets/font/fira-sans-v8-latin-500.svg#FiraSans") format("svg");
 }
 @font-face {
   font-family: "Fira Sans";
   font-style: normal;
   font-weight: 700;
-  src: url("../font/fira-sans-v8-latin-700.eot");
+  src: url("/assets/font/fira-sans-v8-latin-700.eot");
   src: local("Fira Sans Bold"), local("FiraSans-Bold"),
-    url("../font/fira-sans-v8-latin-700.eot?#iefix") format("embedded-opentype"),
-    url("../font/fira-sans-v8-latin-700.woff2") format("woff2"),
-    url("../font/fira-sans-v8-latin-700.woff") format("woff"),
-    url("../font/fira-sans-v8-latin-700.ttf") format("truetype"),
-    url("../font/fira-sans-v8-latin-700.svg#FiraSans") format("svg");
+    url("/assets/font/fira-sans-v8-latin-700.eot?#iefix")
+      format("embedded-opentype"),
+    url("/assets/font/fira-sans-v8-latin-700.woff2") format("woff2"),
+    url("/assets/font/fira-sans-v8-latin-700.woff") format("woff"),
+    url("/assets/font/fira-sans-v8-latin-700.ttf") format("truetype"),
+    url("/assets/font/fira-sans-v8-latin-700.svg#FiraSans") format("svg");
 }
 .hljs {
   display: block;
@@ -486,12 +452,12 @@ textarea {
   font-weight: inherit;
 }
 .post-content p {
-  font-family: "Cardo", serif;
+  font-family: "Times New Roman", serif;
   margin: 0 0 4rem;
 }
 .post-content ol,
 .post-content ul {
-  font-family: "Cardo", serif;
+  font-family: "Times New Roman", serif;
   margin: 0 0 4rem;
   padding-left: 2em;
   box-sizing: border-box;
@@ -543,7 +509,7 @@ textarea {
 }
 
 .post-content blockquote {
-  font-family: "Cardo", serif;
+  font-family: "Times New Roman", serif;
   margin: 0 0 4rem;
   padding: 0.25em 1em;
   -moz-box-sizing: border-box;
@@ -576,7 +542,7 @@ textarea {
   font-size: 0.9em;
 }
 .post-content dl {
-  font-family: "Cardo", serif;
+  font-family: "Times New Roman", serif;
   margin: 0 0 4rem;
   padding-left: 30px;
 }
@@ -1032,7 +998,7 @@ textarea {
   color: #fff;
 }
 .blog-description {
-  font-family: "Cardo", serif;
+  font-family: "Times New Roman", serif;
   display: block;
   margin-top: 1rem;
   padding: 0;
@@ -1087,7 +1053,7 @@ textarea {
   font-size: 2em;
   line-height: 1.5em;
   margin: 1rem 0;
-  font-family: "Cardo", serif;
+  font-family: "Times New Roman", serif;
   color: #909499;
 }
 
@@ -1904,7 +1870,7 @@ textarea {
 }
 .post-excerpt {
   margin: 1em 0 0;
-  font-family: "Cardo", serif;
+  font-family: "Times New Roman", serif;
   font-size: 2em;
   line-height: 1.5em;
 }
@@ -2267,7 +2233,7 @@ textarea {
 .post-nav-excerpt {
   height: 5rem;
   margin: 0 0 1rem;
-  font-family: "Cardo", serif;
+  font-family: "Times New Roman", serif;
   font-size: 1.75em;
   line-height: 2.5rem;
   display: -webkit-box;
