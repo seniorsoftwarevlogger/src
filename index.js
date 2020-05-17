@@ -89,6 +89,103 @@ const ghostApi = new GhostContentAPI({
   version: "v3",
 });
 
+app.get("/", verifyToken, checkMembership, function (req, res) {
+  ghostApi.posts
+    .browse({ limit: 5 })
+    .then((posts) => res.render("home", { posts }))
+    .catch((error) => res.render("error", { error }));
+});
+
+app.get("/privacy", verifyToken, checkMembership, function (req, res) {
+  ghostApi.pages
+    .read({ slug: "privacy" }, { formats: ["html"] })
+    .then((page) => res.render("post", { post: page }))
+    .catch((error) => res.render("error", { error }));
+});
+
+app.get("/posts/:slug", verifyToken, (req, res) => {
+  ghostApi.posts
+    .read({ slug: req.params.slug }, { formats: ["html"] })
+    .then((post) => res.render("post", { post }))
+    .catch((error) => res.render("error", { error }));
+});
+
+app.get("/login", function (req, res) {
+  res.render("login", { patreonUrl, googleUrl, layout: "login" });
+});
+
+app.get("/oauth/redirect/youtube", (req, res) => {
+  const { code } = req.query;
+
+  oauth2Client.getToken(code).then(({ tokens }) => {
+    oauth2Client.setCredentials(tokens);
+
+    google
+      .youtube({ version: "v3", auth: oauth2Client })
+      .channels.list({
+        part: "snippet",
+        mine: true,
+      })
+      .then((response) => {
+        if (response.errors) {
+          // The response structure is different in case of errors ¯\_(ツ)_/¯
+          console.log(errors);
+          // res.status(response.code);
+        }
+
+        // store JWT
+        generateToken(res, {
+          name: response.data.items[0].snippet.title,
+          youtube: {
+            accessToken: tokens.access_token,
+            channelId: response.data.items[0].id,
+          },
+        });
+        res.redirect("/");
+      })
+      .catch((err) => {
+        console.log(err);
+        res.redirect("/");
+      });
+  });
+});
+
+app.get("/oauth/redirect/patreon", (req, res) => {
+  const { code } = req.query;
+
+  return oauthClient
+    .getTokens(code, patreonRedirect)
+    .then(({ access_token }) => {
+      generateToken(res, {
+        patreon: {
+          accessToken: access_token,
+        },
+      });
+
+      return res.redirect("/");
+    })
+    .catch((err) => {
+      console.log(err);
+      console.log("Redirecting to login");
+      res.redirect("/");
+    });
+});
+
+app.get("/logout", (req, res) => {
+  res.cookie("token", "", {
+    expires: new Date(Date.now()),
+    secure: process.env.NODE_ENV === "production",
+    httpOnly: true,
+  });
+
+  res.redirect("/");
+});
+
+const server = app.listen(process.env.PORT || 5000, () => {
+  const { port } = server.address();
+  console.log(`Listening on http:/localhost:${port}`);
+});
+
 function checkMembership(req, res, next) {
   if (req.user.patreon) {
     const patreonLevelMapping = {
@@ -182,93 +279,3 @@ function checkMembership(req, res, next) {
       });
   }
 }
-
-app.get("/", verifyToken, checkMembership, function (req, res) {
-  ghostApi.posts
-    .browse({ limit: 5 })
-    .then((posts) => res.render("home", { posts }))
-    .catch((error) => res.render("error", { error }));
-});
-
-app.get("/posts/:slug", verifyToken, (req, res) => {
-  ghostApi.posts
-    .read({ slug: req.params.slug }, { formats: ["html"] })
-    .then((post) => res.render("post", { post }))
-    .catch((error) => res.render("error", { error }));
-});
-
-app.get("/login", function (req, res) {
-  res.render("login", { patreonUrl, googleUrl, layout: "login" });
-});
-
-app.get("/oauth/redirect/youtube", (req, res) => {
-  const { code } = req.query;
-
-  oauth2Client.getToken(code).then(({ tokens }) => {
-    oauth2Client.setCredentials(tokens);
-
-    google
-      .youtube({ version: "v3", auth: oauth2Client })
-      .channels.list({
-        part: "snippet",
-        mine: true,
-      })
-      .then((response) => {
-        if (response.errors) {
-          // The response structure is different in case of errors ¯\_(ツ)_/¯
-          console.log(errors);
-          // res.status(response.code);
-        }
-
-        // store JWT
-        generateToken(res, {
-          name: response.data.items[0].snippet.title,
-          youtube: {
-            accessToken: tokens.access_token,
-            channelId: response.data.items[0].id,
-          },
-        });
-        res.redirect("/");
-      })
-      .catch((err) => {
-        console.log(err);
-        res.redirect("/");
-      });
-  });
-});
-
-app.get("/oauth/redirect/patreon", (req, res) => {
-  const { code } = req.query;
-
-  return oauthClient
-    .getTokens(code, patreonRedirect)
-    .then(({ access_token }) => {
-      generateToken(res, {
-        patreon: {
-          accessToken: access_token,
-        },
-      });
-
-      return res.redirect("/");
-    })
-    .catch((err) => {
-      console.log(err);
-      console.log("Redirecting to login");
-      res.redirect("/");
-    });
-});
-
-app.get("/logout", (req, res) => {
-  res.cookie("token", "", {
-    expires: new Date(Date.now()),
-    secure: process.env.DB_ENV === "production",
-    httpOnly: true,
-  });
-
-  res.redirect("/");
-});
-
-const server = app.listen(process.env.PORT || 5000, () => {
-  const { port } = server.address();
-  console.log(`Listening on http:/localhost:${port}`);
-});
