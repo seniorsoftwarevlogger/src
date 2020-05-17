@@ -9,6 +9,9 @@ const { google } = require("googleapis");
 const express = require("express");
 const handlebars = require("express-handlebars");
 const cors = require("cors");
+const morgan = require("morgan");
+const compression = require("compression");
+const helmet = require("helmet");
 const cookieParser = require("cookie-parser");
 const generateToken = require("./src/auth/generateToken");
 const verifyToken = require("./src/auth/verifyToken");
@@ -23,6 +26,14 @@ if (process.env.NODE_ENV !== "production") {
 
 const app = express();
 
+app.use(
+  morgan("tiny", {
+    skip: function (req, res) {
+      return req.path.startsWith("/assets");
+    },
+  })
+);
+app.use(helmet());
 app.use(express.static("public"));
 app.use(express.json());
 app.use(
@@ -32,6 +43,8 @@ app.use(
   })
 );
 app.use(cookieParser());
+app.use(compression());
+
 app.engine("handlebars", handlebars());
 app.set("view engine", "handlebars");
 
