@@ -15,7 +15,7 @@ const verifyToken = require("./src/auth/verifyToken");
 
 const format = require("url").format;
 
-const { patreon, oauth } = patreonModule;
+const { oauth } = patreonModule;
 
 if (process.env.NODE_ENV !== "production") {
   require("dotenv").config();
