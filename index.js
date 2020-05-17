@@ -2,6 +2,8 @@ const fetch = require("node-fetch");
 const GhostContentAPI = require("@tryghost/content-api");
 
 const patreonModule = require("patreon");
+const JsonApiDataStore = require("jsonapi-datastore").JsonApiDataStore;
+
 const { google } = require("googleapis");
 
 const express = require("express");
@@ -74,56 +76,93 @@ const ghostApi = new GhostContentAPI({
   version: "v3",
 });
 
-app.get("/", verifyToken, function (req, res) {
+function checkMembership(req, res, next) {
+  if (req.user.patreon) {
+    const patreonLevelMapping = {
+      "Стрим, видео без рекламы и письма": "entry",
+      "Стрим + видео без рекламы": "basic",
+      "Доступ в закулисье": "advanced",
+    };
+
+    fetch(
+      `https://www.patreon.com/api/oauth2/v2/identity?include=memberships,memberships.currently_entitled_tiers&fields%5Bmember%5D=full_name,patron_status,last_charge_date&fields%5Btier%5D=title`,
+      {
+        headers: {
+          Authorization: `Bearer ${req.user.patreon.accessToken}`,
+        },
+      }
+    )
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.errors && json.errors[0].status === "401") {
+          res.redirect("/login");
+        } else {
+          const store = new JsonApiDataStore();
+          store.sync(json);
+
+          req.user.level = patreonLevelMapping[store.findAll("tier")[0].title];
+
+          console.log(`${store.findAll("tier")[0].title} : ${req.user.level}`);
+
+          next();
+        }
+      });
+  } else if (req.user.youtube) {
+    // Extract from the studio :)
+    // JSON.stringify(
+    //   Object.fromEntries(
+    //     $x("//*[contains(@class, 'channel-name')]/ancestor::tr").map((tr) => {
+    //       const link = $("a", tr).getAttribute("href").split("/")[4];
+    //       const level = $("td:nth-of-type(3)", tr).innerHTML;
+    //       return [link, level];
+    //     })
+    //   )
+    // );
+
+    const knownYoutubeMembers = JSON.parse(process.env.YOUTUBE_MEMBERS);
+    const youtubeLevelMapping = {
+      admin: "admin",
+      "Стрим + чат": "basic",
+      "Эксклюзив и черновики": "advanced",
+    };
+
+    oauth2Client.setCredentials({
+      access_token: req.user.youtube.accessToken,
+    });
+
+    google
+      .youtube({ version: "v3", auth: oauth2Client })
+      .channels.list({
+        part: "snippet",
+        mine: true,
+      })
+      .then((response) => {
+        const knownUser = response.data.items.find(
+          ({ id }) => knownYoutubeMembers[id]
+        );
+        if (knownUser != null) {
+          req.user.level =
+            youtubeLevelMapping[knownYoutubeMembers[knownUser.id]];
+
+          console.log(`${knownUser.id} : ${req.user.level}`);
+
+          next();
+        } else {
+          res.redirect("/login");
+        }
+      })
+      .catch((err) => {
+        console.log(err);
+        res.redirect("/login");
+      });
+  }
+}
+
+app.get("/", verifyToken, checkMembership, function (req, res) {
   ghostApi.posts
-    .browse({ limit: 5, include: "tags,authors" })
+    .browse({ limit: 5 })
     .then((posts) => res.render("home", { posts }))
     .catch((error) => res.render("error", { error }));
-
-  // if (req.user.patreon) {
-  //   const apiClient = patreon(req.user.patreon.accessToken);
-
-  //   apiClient("/current_user", {
-  //     include: "memberships",
-  //     fields: {
-  //       user: "full_name,email,image_url,about",
-  //       member:
-  //         "patron_status,last_charge_status,last_charge_date,pledge_relationship_start",
-  //     },
-  //   })
-  //     .then((userData) => {
-  //       params.raw = JSON.stringify(userData.rawJson);
-  //       console.dir(userData.rawJson);
-
-  //       res.render("home", params);
-  //     })
-  //     .catch((err) => {
-  //       console.log(err);
-  //       res.redirect("/");
-  //     });
-  // }
-
-  // if (req.user.youtube) {
-  //   oauth2Client.setCredentials({
-  //     access_token: req.user.youtube.accessToken,
-  //   });
-
-  //   google
-  //     .youtube({ version: "v3", auth: oauth2Client })
-  //     .channels.list({
-  //       part: "snippet",
-  //       mine: true,
-  //     })
-  //     .then((response) => {
-  //       params.raw = JSON.stringify(response.data.items[0]);
-
-  //       res.render("home", params);
-  //     })
-  //     .catch((err) => {
-  //       console.log(err);
-  //       res.redirect("/");
-  //     });
-  // }
 });
 
 app.get("/posts/:slug", verifyToken, (req, res) => {
