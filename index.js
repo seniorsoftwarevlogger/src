@@ -157,7 +157,10 @@ function checkMembership(req, res, next) {
 
           next();
         } else {
-          res.redirect("/login");
+          console.log(`Unknown user`, response.data.items);
+          res.render("error", {
+            error: `Unknown user ${JSON.stringify(response.data.items)}`,
+          });
         }
       })
       .catch((err) => {
