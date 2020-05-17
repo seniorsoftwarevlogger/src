@@ -1,4 +1,4 @@
-# Patreon, Youtube Memberships. Why not both?
+# Patreon, Youtube Memberships. Why not both? ![CI](https://github.com/nLight/src/workflows/CI/badge.svg)
 
 Ghost CMS API Powered community website. Your sponsors can login with their Patreon Account as well as Youtube account.
 
