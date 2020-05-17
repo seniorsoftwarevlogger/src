@@ -26,5 +26,8 @@
     "morgan": "^1.10.0",
     "node-fetch": "^2.6.0",
     "patreon": "^0.4.1"
+  },
+  "devDependencies": {
+    "request": "^2.88.2"
   }
 }

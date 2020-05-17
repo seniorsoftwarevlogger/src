@@ -91,7 +91,7 @@ const ghostApi = new GhostContentAPI({
 
 app.get("/", verifyToken, checkMembership, function (req, res) {
   ghostApi.posts
-    .browse({ limit: 5 })
+    .browse({ limit: 25 })
     .then((posts) => res.render("home", { posts }))
     .catch((error) => res.render("error", { error }));
 });
