@@ -52,7 +52,7 @@ const patreonUrl = format({
     client_id: clientId,
     redirect_uri: patreonRedirect,
     state: "chill",
-    scope: "identity[email]",
+    scope: "identity identity[email]",
   },
 });
 
@@ -218,27 +218,9 @@ app.get("/oauth/redirect/patreon", (req, res) => {
   return oauthClient
     .getTokens(code, patreonRedirect)
     .then(({ access_token }) => {
-      const apiClient = patreon(access_token);
-
-      return Promise.all([
-        Promise.resolve(access_token),
-        apiClient("/current_user", {
-          include: "memberships",
-          fields: {
-            user: "full_name,email,image_url",
-            member:
-              "patron_status,last_charge_status,last_charge_date,pledge_relationship_start",
-          },
-        }),
-      ]);
-    })
-    .then(([token, userData]) => {
-      console.dir(userData.rawJson.data.relationships.campaign);
-
       generateToken(res, {
-        name: userData.rawJson.data.attributes.full_name,
         patreon: {
-          accessToken: token,
+          accessToken: access_token,
         },
       });
 
