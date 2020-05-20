@@ -89,9 +89,22 @@ const ghostApi = new GhostContentAPI({
   version: "v3",
 });
 
-app.get("/", verifyToken, checkMembership, function (req, res) {
+app.get("/", verifyToken, function (req, res) {
+  res.redirect("/posts");
+});
+
+app.get("/posts", verifyToken, checkMembership, function (req, res) {
+  const levelToHashtags = {
+    basic: `tags:[hash-basic]`,
+    advanced: `tags:[hash-basic, hash-advanced]`,
+    admin: `tags:[hash-basic, hash-advanced]`,
+  };
+
   ghostApi.posts
-    .browse({ limit: 25 })
+    .browse({
+      limit: 25,
+      filter: levelToHashtags[req.user.level],
+    })
     .then((posts) => res.render("home", { posts }))
     .catch((error) => res.render("error", { error }));
 });
