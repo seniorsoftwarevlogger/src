@@ -95,6 +95,7 @@ app.get("/", verifyToken, function (req, res) {
 
 app.get("/posts", verifyToken, checkMembership, function (req, res) {
   const levelToHashtags = {
+    entry: `tags:[hash-basic]`,
     basic: `tags:[hash-basic]`,
     advanced: `tags:[hash-basic, hash-advanced]`,
     admin: `tags:[hash-basic, hash-advanced]`,
@@ -103,24 +104,30 @@ app.get("/posts", verifyToken, checkMembership, function (req, res) {
   ghostApi.posts
     .browse({
       limit: 25,
-      filter: levelToHashtags[req.user.level],
+      filter: levelToHashtags[req.user.level || "basic"],
     })
     .then((posts) => res.render("home", { posts }))
-    .catch((error) => res.render("error", { error }));
+    .catch((error) =>
+      res.render("error", { error: JSON.stringify(error, null, 4) })
+    );
 });
 
 app.get("/privacy", function (req, res) {
   ghostApi.pages
     .read({ slug: "privacy" }, { formats: ["html"] })
     .then((page) => res.render("post", { post: page }))
-    .catch((error) => res.render("error", { error }));
+    .catch((error) =>
+      res.render("error", { error: JSON.stringify(error, null, 4) })
+    );
 });
 
 app.get("/posts/:slug", verifyToken, (req, res) => {
   ghostApi.posts
     .read({ slug: req.params.slug }, { formats: ["html"] })
     .then((post) => res.render("post", { post }))
-    .catch((error) => res.render("error", { error }));
+    .catch((error) =>
+      res.render("error", { error: JSON.stringify(error, null, 4) })
+    );
 });
 
 app.get("/login", function (req, res) {
@@ -130,37 +137,43 @@ app.get("/login", function (req, res) {
 app.get("/oauth/redirect/youtube", (req, res) => {
   const { code } = req.query;
 
-  oauth2Client.getToken(code).then(({ tokens }) => {
-    oauth2Client.setCredentials(tokens);
+  oauth2Client
+    .getToken(code)
+    .then(({ tokens }) => {
+      oauth2Client.setCredentials(tokens);
 
-    google
-      .youtube({ version: "v3", auth: oauth2Client })
-      .channels.list({
-        part: "snippet",
-        mine: true,
-      })
-      .then((response) => {
-        if (response.errors) {
-          // The response structure is different in case of errors ¯\_(ツ)_/¯
-          console.log(errors);
-          // res.status(response.code);
-        }
+      google
+        .youtube({ version: "v3", auth: oauth2Client })
+        .channels.list({
+          part: "snippet",
+          mine: true,
+        })
+        .then((response) => {
+          if (response.errors) {
+            // The response structure is different in case of errors ¯\_(ツ)_/¯
+            console.log(errors);
+            // res.status(response.code);
+          }
 
-        // store JWT
-        generateToken(res, {
-          name: response.data.items[0].snippet.title,
-          youtube: {
-            accessToken: tokens.access_token,
-            channelId: response.data.items[0].id,
-          },
+          // store JWT
+          generateToken(res, {
+            name: response.data.items[0].snippet.title,
+            youtube: {
+              accessToken: tokens.access_token,
+              channelId: response.data.items[0].id,
+            },
+          });
+          res.redirect("/");
+        })
+        .catch((err) => {
+          console.log(err);
+          res.redirect("/");
         });
-        res.redirect("/");
-      })
-      .catch((err) => {
-        console.log(err);
-        res.redirect("/");
-      });
-  });
+    })
+    .catch((err) => {
+      console.log(err);
+      res.redirect("/");
+    });
 });
 
 app.get("/oauth/redirect/patreon", (req, res) => {
@@ -219,7 +232,7 @@ function checkMembership(req, res, next) {
       .then((json) => {
         if (json.errors && json.errors[0].status === "401") {
           console.log(json.errors);
-          res.render("error", { error: json.errors[0] });
+          res.render("error", { error: JSON.stringify(json.errors, null, 4) });
         } else {
           const store = new JsonApiDataStore();
           store.sync(json);
@@ -238,6 +251,10 @@ function checkMembership(req, res, next) {
             res.redirect("/login");
           }
         }
+      })
+      .catch((err) => {
+        console.log(err);
+        res.redirect("/login");
       });
   } else if (req.user.youtube) {
     // Extract from the studio :)
@@ -282,7 +299,11 @@ function checkMembership(req, res, next) {
         } else {
           console.log(`Unknown user`, response.data.items);
           res.render("error", {
-            error: `Unknown user ${JSON.stringify(response.data.items)}`,
+            error: `Unknown user ${JSON.stringify(
+              response.data.items,
+              null,
+              4
+            )}`,
           });
         }
       })

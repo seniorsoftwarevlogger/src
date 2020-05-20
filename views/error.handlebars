@@ -1,1 +1,22 @@
-<article>{{{error}}}</article>
+<header class="post-header {{#if feature_image}} has-cover {{/if}}">
+  <div class="inner">
+    <span class="post-info">
+      <span class="post-type">{{"Article"}}</span>
+      {{#if tags}}
+      <span class="post-count">{{primary_tag.name}}</span>
+      {{/if}}
+    </span>
+    <h1 class="post-title">Что-то пошло не так</h1>
+  </div>
+</header>
+<main class="content" role="main">
+  <article class="{{post_class}}">
+    <div class="inner">
+      <section class="post-content">
+        <p>Скорее всего сломалась авторизация. Попробуйте <a href="/login">залогиниться снова</a></p>
+        <p>Ошибка:</p>
+        <pre> <code>{{{error}}}</code>  </pre>
+      </section>
+    </div>
+  </article>
+</main>
