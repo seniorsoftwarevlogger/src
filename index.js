@@ -89,8 +89,13 @@ const ghostApi = new GhostContentAPI({
   version: "v3",
 });
 
-app.get("/", verifyToken, function (req, res) {
-  res.redirect("/posts");
+app.get("/", function (req, res) {
+  ghostApi.pages
+    .read({ slug: "index" }, { formats: ["html"] })
+    .then((page) => res.render("index", { ...page }))
+    .catch((error) =>
+      res.render("error", { error: JSON.stringify(error, null, 4) })
+    );
 });
 
 app.get("/posts", verifyToken, checkMembership, function (req, res) {
