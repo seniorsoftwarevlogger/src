@@ -93,9 +93,7 @@ app.get("/", function (req, res) {
   ghostApi.pages
     .read({ slug: "index" }, { formats: ["html"] })
     .then((page) => res.render("index", { ...page }))
-    .catch((error) =>
-      res.render("error", { error: JSON.stringify(error, null, 4) })
-    );
+    .catch((err) => renderError(res, err));
 });
 
 app.get("/posts", verifyToken, checkMembership, function (req, res) {
@@ -112,27 +110,21 @@ app.get("/posts", verifyToken, checkMembership, function (req, res) {
       filter: levelToHashtags[req.user.level || "basic"],
     })
     .then((posts) => res.render("home", { posts }))
-    .catch((error) =>
-      res.render("error", { error: JSON.stringify(error, null, 4) })
-    );
+    .catch((err) => renderError(res, err));
 });
 
 app.get("/privacy", function (req, res) {
   ghostApi.pages
     .read({ slug: "privacy" }, { formats: ["html"] })
     .then((page) => res.render("post", { post: page }))
-    .catch((error) =>
-      res.render("error", { error: JSON.stringify(error, null, 4) })
-    );
+    .catch((err) => renderError(res, err));
 });
 
 app.get("/posts/:slug", verifyToken, (req, res) => {
   ghostApi.posts
     .read({ slug: req.params.slug }, { formats: ["html"] })
     .then((post) => res.render("post", { post }))
-    .catch((error) =>
-      res.render("error", { error: JSON.stringify(error, null, 4) })
-    );
+    .catch((err) => renderError(res, err));
 });
 
 app.get("/login", function (req, res) {
@@ -156,8 +148,7 @@ app.get("/oauth/redirect/youtube", (req, res) => {
         .then((response) => {
           if (response.errors) {
             // The response structure is different in case of errors ¯\_(ツ)_/¯
-            console.log(errors);
-            // res.status(response.code);
+            return renderError(res, response.errors);
           }
 
           // store JWT
@@ -168,17 +159,12 @@ app.get("/oauth/redirect/youtube", (req, res) => {
               channelId: response.data.items[0].id,
             },
           });
-          res.redirect("/");
+
+          res.redirect("/posts");
         })
-        .catch((err) => {
-          console.log(err);
-          res.redirect("/");
-        });
+        .catch((err) => renderError(res, err));
     })
-    .catch((err) => {
-      console.log(err);
-      res.redirect("/");
-    });
+    .catch((err) => renderError(res, err));
 });
 
 app.get("/oauth/redirect/patreon", (req, res) => {
@@ -193,13 +179,9 @@ app.get("/oauth/redirect/patreon", (req, res) => {
         },
       });
 
-      return res.redirect("/");
+      res.redirect("/posts");
     })
-    .catch((err) => {
-      console.log(err);
-      console.log("Redirecting to login");
-      res.redirect("/");
-    });
+    .catch((err) => renderError(res, err));
 });
 
 app.get("/logout", (req, res) => {
@@ -216,6 +198,11 @@ const server = app.listen(process.env.PORT || 5000, () => {
   const { port } = server.address();
   console.log(`Listening on http:/localhost:${port}`);
 });
+
+function renderError(res, err) {
+  console.log(err);
+  res.render("error", { error: JSON.stringify(err, null, 4) });
+}
 
 function checkMembership(req, res, next) {
   if (req.user.patreon) {
@@ -236,8 +223,7 @@ function checkMembership(req, res, next) {
       .then((res) => res.json())
       .then((json) => {
         if (json.errors && json.errors[0].status === "401") {
-          console.log(json.errors);
-          res.render("error", { error: JSON.stringify(json.errors, null, 4) });
+          renderError(res, json.errors);
         } else {
           const store = new JsonApiDataStore();
           store.sync(json);
@@ -252,15 +238,11 @@ function checkMembership(req, res, next) {
 
             next();
           } else {
-            console.log("User entitled to no tiers");
-            res.redirect("/login");
+            renderError(res, ["Похоже, что у вас нет реги"]);
           }
         }
       })
-      .catch((err) => {
-        console.log(err);
-        res.redirect("/login");
-      });
+      .catch((err) => renderError(res, err));
   } else if (req.user.youtube) {
     // Extract from the studio :)
     // JSON.stringify(
@@ -302,19 +284,9 @@ function checkMembership(req, res, next) {
 
           next();
         } else {
-          console.log(`Unknown user`, response.data.items);
-          res.render("error", {
-            error: `Unknown user ${JSON.stringify(
-              response.data.items,
-              null,
-              4
-            )}`,
-          });
+          renderError(res, ["Похоже, что у вас нет реги", response.data.items]);
         }
       })
-      .catch((err) => {
-        console.log(err);
-        res.redirect("/login");
-      });
+      .catch((err) => renderError(res, err));
   }
 }
