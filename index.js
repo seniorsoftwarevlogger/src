@@ -15,6 +15,7 @@ const helmet = require("helmet");
 const cookieParser = require("cookie-parser");
 const generateToken = require("./src/auth/generateToken");
 const verifyToken = require("./src/auth/verifyToken");
+const redirectIfLoggedIn = require("./src/auth/redirectIfLoggedIn");
 
 const format = require("url").format;
 
@@ -89,6 +90,7 @@ const ghostApi = new GhostContentAPI({
   version: "v3",
 });
 
+app.get("/", redirectIfLoggedIn("/posts"));
 app.get("/", function (req, res) {
   ghostApi.pages
     .read({ slug: "index" }, { formats: ["html"] })
@@ -127,6 +129,7 @@ app.get("/posts/:slug", verifyToken, (req, res) => {
     .catch((err) => renderError(res, err));
 });
 
+app.get("/login", redirectIfLoggedIn("/posts"));
 app.get("/login", function (req, res) {
   res.render("login", { patreonUrl, googleUrl, layout: "login" });
 });
