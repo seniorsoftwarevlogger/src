@@ -3,10 +3,9 @@ const jwt = require("jsonwebtoken");
 const verifyToken = async (req, res, next) => {
   const token = req.cookies.token || "";
 
+  if (!token) return res.redirect("/login");
+
   try {
-    if (!token) {
-      return res.redirect("/login");
-    }
     req.user = await jwt.verify(token, process.env.JWT_SECRET);
     next();
   } catch (err) {
