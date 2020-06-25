@@ -77,7 +77,7 @@ const oauth2Client = new google.auth.OAuth2(
     "http://localhost:5000/oauth/redirect/youtube"
 );
 
-const scopes = ["https://www.googleapis.com/auth/youtube"];
+const scopes = ["https://www.googleapis.com/auth/youtube.readonly"];
 
 const googleUrl = oauth2Client.generateAuthUrl({
   access_type: "online",
