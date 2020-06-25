@@ -112,7 +112,7 @@ app.get("/posts", verifyToken, checkMembership, function (req, res) {
       limit: 25,
       filter: levelToHashtags[req.user.level || "basic"],
     })
-    .then((posts) => res.render("home", { posts }))
+    .then((posts) => res.render("home", { posts, user: req.user }))
     .catch((err) => renderError(res, err));
 });
 
@@ -158,6 +158,8 @@ app.get("/oauth/redirect/youtube", (req, res) => {
           // store JWT
           generateToken(res, {
             name: response.data.items[0].snippet.title,
+            photo_url: response.data.items[0].snippet.thumbnails.medium.url,
+            url: `https://www.youtube.com/channel/${response.data.items[0].id}`,
             youtube: {
               accessToken: tokens.access_token,
               channelId: response.data.items[0].id,
@@ -178,6 +180,9 @@ app.get("/oauth/redirect/patreon", (req, res) => {
     .getTokens(code, patreonRedirect)
     .then(({ access_token }) => {
       generateToken(res, {
+        name: "",
+        photo_url: "",
+        url: "",
         patreon: {
           accessToken: access_token,
         },
@@ -217,7 +222,7 @@ function checkMembership(req, res, next) {
     };
 
     fetch(
-      `https://www.patreon.com/api/oauth2/v2/identity?include=memberships,memberships.currently_entitled_tiers&fields%5Bmember%5D=full_name,patron_status,last_charge_date&fields%5Btier%5D=title`,
+      `https://www.patreon.com/api/oauth2/v2/identity?include=memberships,memberships.currently_entitled_tiers&fields%5Buser%5D=full_name,image_url,url&fields%5Bmember%5D=full_name,patron_status,last_charge_date&fields%5Btier%5D=title`,
       {
         headers: {
           Authorization: `Bearer ${req.user.patreon.accessToken}`,
@@ -236,6 +241,9 @@ function checkMembership(req, res, next) {
 
           if (tier) {
             req.user.level = patreonLevelMapping[tier.title];
+            req.user.name = store.findAll("user")[0].full_name;
+            req.user.photo_url = store.findAll("user")[0].image_url;
+            req.user.url = store.findAll("user")[0].url;
             console.log(
               `${store.findAll("tier")[0].title} : ${req.user.level}`
             );
