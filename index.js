@@ -82,6 +82,7 @@ const scopes = ["https://www.googleapis.com/auth/youtube"];
 const googleUrl = oauth2Client.generateAuthUrl({
   access_type: "online",
   scope: scopes,
+  prompt: "consent",
 });
 
 const ghostApi = new GhostContentAPI({
