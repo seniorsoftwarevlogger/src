@@ -14,17 +14,26 @@
     </div>
   </div>
 </header>
-<main class="content" role="main">
-  <article class="{{post_class}}">
-    <div class="inner">
+<div id="index" class="container">
 
-      <section class="post-content">
-        <ul>
-          {{#each posts}}
-          <li><a href="/posts/{{{this.slug}}}">{{{this.title}}}</a></li>
-          {{/each}}
-        </ul>
-      </section>
-    </div>
-  </article>
-</main>
+  <main class="content" role="main">
+
+    {{#each posts}}
+
+    <article class="post">
+      <div class="inner">
+        <div class="box post-box">
+          <h2 class="post-title"><a href="/posts/{{{this.slug}}}">{{{this.title}}}</a></h2>
+          <span class="post-meta">
+            <time datetime="{{this.created_at}}">{{this.created_at}}</time>
+          </span>
+          <p class="post-excerpt">{{this.custom_excerpt}}</p>
+        </div>
+      </div>
+    </article>
+
+    {{/each}}
+
+  </main>
+
+</div>
