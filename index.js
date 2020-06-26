@@ -100,17 +100,12 @@ app.get("/", function (req, res) {
 });
 
 app.get("/posts", verifyToken, checkMembership, function (req, res) {
-  const levelToHashtags = {
-    entry: `tags:[hash-basic]`,
-    basic: `tags:[hash-basic]`,
-    advanced: `tags:[hash-basic, hash-advanced]`,
-    admin: `tags:[hash-basic, hash-advanced]`,
-  };
+  const tags = tagsForLevel(req.user.level);
 
   ghostApi.posts
     .browse({
       limit: 25,
-      filter: levelToHashtags[req.user.level || "basic"],
+      filter: tags,
     })
     .then((posts) => res.render("home", { posts, user: req.user }))
     .catch((err) => renderError(res, err));
@@ -123,9 +118,21 @@ app.get("/privacy", function (req, res) {
     .catch((err) => renderError(res, err));
 });
 
-app.get("/posts/:slug", verifyToken, (req, res) => {
+app.get("/posts/:slug", verifyToken, checkMembership, (req, res) => {
+  const tags = tagsForLevel(req.user.level);
+
   ghostApi.posts
-    .read({ slug: req.params.slug }, { formats: ["html"] })
+    .browse({ limit: 1, filter: `${tags} + slug:${req.params.slug}` })
+    .then((posts) => {
+      if (posts.length === 1) {
+        return posts[0];
+      }
+
+      return {
+        title: "🔒 Пост недоступен",
+        html: "<p>Пост доступен со следующего уровня поддержки.</p>",
+      };
+    })
     .then((post) => res.render("post", { post }))
     .catch((err) => renderError(res, err));
 });
@@ -301,4 +308,15 @@ function checkMembership(req, res, next) {
       })
       .catch((err) => renderError(res, err));
   }
+}
+
+function tagsForLevel(level) {
+  return (
+    {
+      entry: `tags:[hash-basic]`,
+      basic: `tags:[hash-basic]`,
+      advanced: `tags:[hash-basic, hash-advanced]`,
+      admin: `tags:[hash-basic, hash-advanced]`,
+    }[level] || "basic"
+  );
 }
