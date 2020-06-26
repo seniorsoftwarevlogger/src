@@ -317,6 +317,6 @@ function tagsForLevel(level) {
       basic: `tags:[hash-basic]`,
       advanced: `tags:[hash-basic, hash-advanced]`,
       admin: `tags:[hash-basic, hash-advanced]`,
-    }[level] || "basic"
+    }[level] || "tags:[hash-basic]"
   );
 }
