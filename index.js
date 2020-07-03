@@ -1,3 +1,4 @@
+const Sentry = require("@sentry/node");
 const fetch = require("node-fetch");
 const GhostContentAPI = require("@tryghost/content-api");
 
@@ -26,6 +27,11 @@ if (process.env.NODE_ENV !== "production") {
 }
 
 const app = express();
+
+Sentry.init({ dsn: process.env.SENTRY_DSN });
+
+app.use(Sentry.Handlers.requestHandler());
+app.use(Sentry.Handlers.errorHandler());
 
 app.use(
   morgan("tiny", {
