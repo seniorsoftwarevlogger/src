@@ -270,15 +270,15 @@ function checkMembership(req, res, next) {
       .catch((err) => renderError(res, err));
   } else if (req.user.youtube) {
     // Extract from the studio :)
-    // JSON.stringify(
-    //   Object.fromEntries(
-    //     $x("//*[contains(@class, 'channel-name')]/ancestor::tr").map((tr) => {
-    //       const link = $("a", tr).getAttribute("href").split("/")[4];
-    //       const level = $("td:nth-of-type(3)", tr).innerHTML;
-    //       return [link, level];
-    //     })
-    //   )
-    // );
+//    JSON.stringify(
+//      Object.fromEntries(
+//        $x("//*[contains(@class, 'channel-name')]/ancestor::tr").map((tr) => {
+//          const link = $("a", tr).getAttribute("href").split("/")[4];
+//          const level = $("td:nth-of-type(3)", tr).innerHTML;
+//          return [link, level];
+//        })
+//      )
+//    );
 
     const knownYoutubeMembers = JSON.parse(process.env.YOUTUBE_MEMBERS);
     const youtubeLevelMapping = {
