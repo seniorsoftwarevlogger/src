@@ -13,3 +13,18 @@ PATREON_CLIENT_SECRET=
 
 JWT_SECRET=
 ```
+
+## Scrap youtube members from the dashboard
+
+```js
+console.log("YOUTUBE_MEMBERS='" + JSON.stringify(
+    Object.fromEntries(
+    $x("//*[contains(@class, 'row style-scope ytsp-sponsors-dialog')]").map((tr) => {
+        const link = $("a", tr).getAttribute("href").split("/")[4];
+        const level = $(".sponsor-current_tier", tr).innerText;
+console.log(level);
+        return [link, level];
+    })
+    )
+) + "'");
+```
