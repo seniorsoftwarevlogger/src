@@ -14,7 +14,7 @@
     "@tryghost/admin-api": "^1.4.4",
     "@tryghost/content-api": "^1.5.16",
     "compression": "^1.7.4",
-    "cookie-parser": "^1.4.5",
+    "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
     "dotenv": "^10.0.0",
     "express": "^4.17.2",
