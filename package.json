@@ -20,7 +20,7 @@
     "express": "^4.17.2",
     "express-handlebars": "^6.0.2",
     "express-jwt": "^6.1.0",
-    "googleapis": "^67.0.0",
+    "googleapis": "^97.0.0",
     "helmet": "^5.0.2",
     "jsonapi-datastore": "^0.4.0-beta",
     "jsonwebtoken": "^8.5.1",
