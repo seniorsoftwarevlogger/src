@@ -12,7 +12,7 @@
   "dependencies": {
     "@sentry/node": "^6.17.2",
     "@tryghost/admin-api": "^1.4.4",
-    "@tryghost/content-api": "^1.5.16",
+    "@tryghost/content-api": "^1.7.1",
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
