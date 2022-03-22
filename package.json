@@ -10,7 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@sentry/node": "^6.17.2",
+    "@sentry/node": "^6.19.1",
     "@tryghost/admin-api": "^1.4.4",
     "@tryghost/content-api": "^1.5.16",
     "compression": "^1.7.4",
