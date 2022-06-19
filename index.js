@@ -52,7 +52,7 @@ app.use(
 app.use(cookieParser());
 app.use(compression());
 
-app.engine("handlebars", handlebars());
+app.engine("handlebars", handlebars.engine());
 app.set("view engine", "handlebars");
 
 const clientId = process.env.PATREON_CLIENT_ID;
