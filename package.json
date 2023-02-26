@@ -14,7 +14,7 @@
     "@googleapis/youtube": "^8.0.2",
     "@sentry/node": "^6.19.6",
     "@tryghost/admin-api": "^1.13.0",
-    "@tryghost/content-api": "^1.0.0",
+    "@tryghost/content-api": "^1.11.5",
     "compression": "^1.7.4",
     "cookie-parser": "^1.4.6",
     "cors": "^2.8.5",
