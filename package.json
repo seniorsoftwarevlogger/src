@@ -12,7 +12,7 @@
   "dependencies": {
     "@googleapis/oauth2": "^1.0.0",
     "@googleapis/youtube": "^8.0.2",
-    "@sentry/node": "^6.19.6",
+    "@sentry/node": "^7.38.0",
     "@tryghost/admin-api": "^1.13.0",
     "@tryghost/content-api": "^1.0.0",
     "compression": "^1.7.4",
